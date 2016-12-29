@@ -35,6 +35,11 @@ namespace Abp.WebApi.Uow
                 return await continuation();
             }
 
+            if (actionContext.ActionDescriptor.IsDynamicAbpAction())
+            {
+                return await continuation();
+            }
+
             var unitOfWorkAttr = UnitOfWorkAttribute.GetUnitOfWorkAttributeOrNull(methodInfo) ??
                                  _configuration.DefaultUnitOfWorkAttribute;
 

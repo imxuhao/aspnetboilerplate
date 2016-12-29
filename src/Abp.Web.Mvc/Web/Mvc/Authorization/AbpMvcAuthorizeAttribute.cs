@@ -1,7 +1,6 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
 using Abp.Authorization;
-using Abp.Dependency;
-using Abp.Logging;
 
 namespace Abp.Web.Mvc.Authorization
 {
@@ -9,6 +8,7 @@ namespace Abp.Web.Mvc.Authorization
     /// This attribute is used on an action of an MVC <see cref="Controller"/>
     /// to make that action usable only by authorized users. 
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class AbpMvcAuthorizeAttribute : AuthorizeAttribute, IAbpAuthorizeAttribute
     {
         /// <inheritdoc/>
@@ -26,31 +26,6 @@ namespace Abp.Web.Mvc.Authorization
             Permissions = permissions;
         }
 
-        /// <inheritdoc/>
-        protected override bool AuthorizeCore(System.Web.HttpContextBase httpContext)
-        {
-            if (!base.AuthorizeCore(httpContext))
-            {
-                return false;
-            }
-
-            try
-            {
-                using (var authorizationAttributeHelper = IocManager.Instance.ResolveAsDisposable<IAuthorizationHelper>())
-                {
-                    authorizationAttributeHelper.Object.Authorize(this);
-                }
-
-                return true;
-            }
-            catch (AbpAuthorizationException ex)
-            {
-                LogHelper.Logger.Warn(ex.ToString(), ex);
-                return false;
-            }
-        }
-
-        /// <inheritdoc/>
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
         {
             var httpContext = filterContext.HttpContext;
@@ -62,8 +37,8 @@ namespace Abp.Web.Mvc.Authorization
             }
 
             httpContext.Response.StatusCode = httpContext.User.Identity.IsAuthenticated == false
-                                      ? (int) System.Net.HttpStatusCode.Unauthorized
-                                      : (int) System.Net.HttpStatusCode.Forbidden;
+                                      ? (int)System.Net.HttpStatusCode.Unauthorized
+                                      : (int)System.Net.HttpStatusCode.Forbidden;
 
             httpContext.Response.SuppressFormsAuthenticationRedirect = true;
             httpContext.Response.End();

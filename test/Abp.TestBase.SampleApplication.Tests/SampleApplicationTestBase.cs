@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Abp.TestBase.SampleApplication.ContacLists;
 using Abp.TestBase.SampleApplication.Crm;
 using Abp.TestBase.SampleApplication.EntityFramework;
+using Abp.TestBase.SampleApplication.Messages;
 using Abp.TestBase.SampleApplication.People;
 using Castle.MicroKernel.Registration;
 using EntityFramework.DynamicFilters;
@@ -15,17 +16,22 @@ namespace Abp.TestBase.SampleApplication.Tests
     {
         protected SampleApplicationTestBase()
         {
+            CreateInitialData();
+        }
+
+        protected override void PreInitialize()
+        {
+            base.PreInitialize();
+
             //Fake DbConnection using Effort!
             LocalIocManager.IocContainer.Register(
                 Component.For<DbConnection>()
                     .UsingFactoryMethod(Effort.DbConnectionFactory.CreateTransient)
                     .LifestyleSingleton()
                 );
-
-            CreateInitialData();
         }
 
-        private void CreateInitialData()
+        protected virtual void CreateInitialData()
         {
             UsingDbContext(
                 context =>
@@ -37,7 +43,7 @@ namespace Abp.TestBase.SampleApplication.Tests
                             Name = "List of Tenant-1",
                             People = new List<Person>
                                      {
-                                         new Person {Name = "halil"},
+                                         new Person {Name = "halil", CreatorUserId = 42 },
                                          new Person {Name = "emre", IsDeleted = true}
                                      }
                         });
